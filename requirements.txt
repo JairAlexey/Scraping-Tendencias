@@ -1,0 +1,7 @@
+streamlit
+pytrends
+undetected-chromedriver
+python-dotenv
+selenium 
+openpyxl
+xlwings
