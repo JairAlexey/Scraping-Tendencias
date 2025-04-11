@@ -3,6 +3,7 @@ import pandas as pd
 from data_process.mercado import calc_mercado
 from data_process.linkedin import calc_linkedin
 from data_process.busquedaWeb import calc_busquedaWeb
+from data_process.competencia import calc_competencia_presencial, calc_competencia_virtual
 
 st.title("Certificaciones")
 st.subheader("Evaluación")
@@ -41,11 +42,11 @@ def calcular_valor_general(parametro):
 
 # Funciones específicas para "Competencia"
 def calcular_presencial_competencia():
-    return 0
+    return calc_competencia_presencial()
 
 
 def calcular_virtual_competencia():
-    return 0
+    return calc_competencia_virtual()
 
 
 # Diccionarios para mapear resultados
@@ -57,8 +58,8 @@ for parametro in parametros:
         presencialidad_resultados.append(calcular_presencial_competencia())
         virtualidad_resultados.append(calcular_virtual_competencia())
     elif parametro == "Total":
-        total_presencial = sum(presencialidad_resultados)
-        total_virtual = sum(virtualidad_resultados)
+        total_presencial = round(sum(presencialidad_resultados), 2)
+        total_virtual = round(sum(virtualidad_resultados), 2)
         presencialidad_resultados.append(total_presencial)
         virtualidad_resultados.append(total_virtual)
     else:

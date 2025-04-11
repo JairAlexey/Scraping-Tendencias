@@ -371,4 +371,4 @@ def linkedin_scraper():
     else:
         print("ℹ️ No se obtuvieron resultados.")
 
-    # driver.quit()  # Descomenta para cerrar el navegador al finalizar
+    driver.quit()  # Descomenta para cerrar el navegador al finalizar

@@ -21,14 +21,9 @@ def calc_busquedaWeb():
     # Lectura archivo
     data = pd.read_excel(archivo, sheet_name=None)
 
-    # Definir dataframes (hojas) a utilizar
     # --- SEMRUSH ---
     hjSemrushBase = data["SemrushBase"]
     hjSemrush = data["Semrush"]
-
-    # --- TRENDS ---
-    hjTrendsBase = data["GoogleTrendsBase"]
-    hjTrends = data["GoogleTrends"]
 
     # --- CALCULO SEMRUSH ---
     # Filtrar en SemrushBase el ID Carrera por el id de la carrera referencia
@@ -61,11 +56,22 @@ def calc_busquedaWeb():
     # Calcular el promedio de las 3 columnas
     promedioSemrush = round(((resVisionGeneral + resPalabras + resVolumen) / 3), 2)
 
+    # --- TRENDS ---
+    hjTrendsBase = data["GoogleTrendsBase"]
+    hjTrends = pd.DataFrame(extraer_datos_tabla("palabrasTrends"))
+
+    # Extraer palabras trends base segun id
+    palabrasCarreraBase = hjTrendsBase.loc[hjTrendsBase["ID Carrera"] == idCarrera]
+
+    # Obtener el promedio de los 6 valores más altos de la columna 'Cantidad'
+    promedio_basePalabras = palabrasCarreraBase["Cantidad"].nlargest(6).mean()
+    promedio_consultaPalabras = hjTrends["Cantidad"].nlargest(6).mean()
+
+    # Sumar los promedios
+    promedioTrends = round(((promedio_consultaPalabras * TRENDS) / promedio_basePalabras) * 100, 2)
+
     # --- CALCULO TRENDS ---
-
-    
-
     # Suma promedios plataformas semrush y trends
-    resBusqueda = promedioSemrush
+    resBusqueda = round(promedioSemrush + promedioTrends, 2)
 
     return resBusqueda

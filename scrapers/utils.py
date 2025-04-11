@@ -11,15 +11,9 @@ def extraer_datos_tabla(nombre_tabla):
         tabla = sht.tables[nombre_tabla]
         df = tabla.range.options(pd.DataFrame, expand="table", index=False).value
 
-        if nombre_tabla in ["reporteLinkedin", "mercado"]:
+        if nombre_tabla in ["reporteLinkedin", "mercado", "palabrasTrends", "ofertaCarrera"]:
             # Devolver todo el dataframe como lista de diccionarios
             resultado = df.to_dict(orient="records") if not df.empty else []
-
-        elif nombre_tabla == "palabrasTrends":
-            # Devolver solo la columna "Palabras"
-            resultado = (
-                df["Palabras"].dropna().tolist() if "Palabras" in df.columns else []
-            )
 
         elif nombre_tabla in ["carreraSemrush", "carreraReferencia"]:
             # Devolver el único valor de la tabla (una sola celda)
@@ -38,7 +32,6 @@ def extraer_datos_tabla(nombre_tabla):
         app.quit()
 
     return resultado
-
 
 def guardar_datos_excel(data, plataforma):
     """
@@ -161,7 +154,6 @@ def guardar_datos_excel(data, plataforma):
     app.quit()
     print(f"📊 Datos guardados en Excel correctamente (plataforma: {plataforma}).")
 
-
 def obtener_id_carrera(nombre_carrera):
     try:
         df = pd.read_excel("db/data.xlsx", sheet_name="Carreras", engine="openpyxl")
@@ -174,7 +166,6 @@ def obtener_id_carrera(nombre_carrera):
 
     except Exception as e:
         raise ValueError(f"Error al obtener ID de carrera: {e}")
-
 
 def obtener_codigos_por_id_carrera(id_carrera):
     try:
