@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 import time
 
+
 # -----------------------------------------------------------------------------
 # FUNCIÓN: Buscar carpeta en la página actual
 # -----------------------------------------------------------------------------
@@ -186,7 +187,9 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
 # -----------------------------------------------------------------------------
 # FUNCIÓN: Buscar el proyecto (reporte) en la página actual de la carpeta
 # -----------------------------------------------------------------------------
-def buscar_proyecto_en_pagina(driver, proyecto_buscar, ubicaciones, carpeta_nombre, resultados_finales):
+def buscar_proyecto_en_pagina(
+    driver, proyecto_buscar, ubicaciones, carpeta_nombre, resultados_finales
+):
     """
     Recorre las filas (reportes) de la tabla en la página actual.
     Si encuentra el reporte cuyo nombre coincide con 'proyecto_buscar',
@@ -233,6 +236,7 @@ def buscar_proyecto_en_pagina(driver, proyecto_buscar, ubicaciones, carpeta_nomb
             continue
     return False
 
+
 def linkedin_scraper():
     # -----------------------------------------------------------------------------
     # CONFIGURACIÓN: Cargar variables de entorno y definir parámetros iniciales
@@ -249,10 +253,6 @@ def linkedin_scraper():
     # Configuración del navegador "indetectable"
     options = uc.ChromeOptions()
     options.add_argument("--start-maximized")
-    options.add_argument(
-        r"--user-data-dir=C:\Users\andrei.flores\AppData\Local\Google\Chrome\User Data"
-    )
-    options.add_argument("--profile-directory=Default")
     driver = uc.Chrome(options=options)
 
     # URL de la vista de carpetas
@@ -265,6 +265,14 @@ def linkedin_scraper():
         driver.find_element(By.ID, "username").send_keys(EMAIL)
         driver.find_element(By.ID, "password").send_keys(PASSWORD + Keys.RETURN)
         time.sleep(8)
+
+        # 🚨 Verificación de dos pasos
+        while "checkpoint" in driver.current_url or "verificar" in driver.page_source.lower():
+            print("\n🔒 Verificación en dos pasos detectada.")
+            print("👉 Por favor, introduce el código de verificación manualmente en el navegador.")
+            print("⏳ Esperando... Pulsa ENTER aquí cuando hayas terminado.")
+            input()
+            time.sleep(3)
 
     print("✅ Sesión iniciada.")
     time.sleep(5)
@@ -346,7 +354,11 @@ def linkedin_scraper():
                     ActionChains(driver).move_to_element(btn).click().perform()
                     time.sleep(3)
                     if buscar_proyecto_en_pagina(
-                        driver, proyecto_buscar, UBICACIONES, carpeta_buscar, resultados_finales
+                        driver,
+                        proyecto_buscar,
+                        UBICACIONES,
+                        carpeta_buscar,
+                        resultados_finales,
                     ):
                         proyecto_encontrado = True
                         break

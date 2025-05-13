@@ -69,4 +69,8 @@ def calc_mercado():
             cantidad += 1
 
     promedio = round(total / cantidad, 2) if cantidad else 0
+
+    if promedio >= 15:
+        promedio = 15
+
     return promedio

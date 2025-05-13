@@ -96,7 +96,7 @@ def resaltar_filas(row):
 styled_df = (
     df.style.apply(resaltar_filas, axis=1)
     .set_table_styles([{"selector": "th", "props": [("color", "black")]}])
-    .format({"Presencialidad": lambda x: x, "Virtualidad": lambda x: x})
+    .format({"Presencialidad": lambda x: f"{x:.0f}%", "Virtualidad": lambda x: f"{x:.0f}%"})
 )
 
 st.dataframe(styled_df, use_container_width=True, hide_index=True)

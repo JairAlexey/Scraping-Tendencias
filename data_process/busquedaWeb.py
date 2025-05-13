@@ -70,8 +70,15 @@ def calc_busquedaWeb():
     # Sumar los promedios
     promedioTrends = round(((promedio_consultaPalabras * TRENDS) / promedio_basePalabras) * 100, 2)
 
-    # --- CALCULO TRENDS ---
+    # --- CALCULO TOTAL ---
     # Suma promedios plataformas semrush y trends
+
+    if promedioSemrush >= 15:
+        promedioSemrush = 15
+
+    if promedioTrends >= 20:
+        promedioTrends = 20
+
     resBusqueda = round(promedioSemrush + promedioTrends, 2)
 
     return resBusqueda

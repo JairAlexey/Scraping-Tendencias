@@ -54,7 +54,7 @@ def semrush_scraper():
 
     # 3. IR A LA PÁGINA DE LOGIN
     driver.get("https://es.semrush.com/login/?src=header&redirect_to=%2F")
-    time.sleep(4)
+    time.sleep(1.5)
 
     # 4. VERIFICAR SI YA HAY SESIÓN
     if "login" not in driver.current_url:
@@ -73,7 +73,7 @@ def semrush_scraper():
 
             # Hacer Enter o buscar un botón de login, si existe:
             input_password.send_keys(Keys.RETURN)
-            time.sleep(6)
+            time.sleep(3)
 
             # Verificar si salimos de la pantalla de login
             if "login" in driver.current_url:
@@ -91,7 +91,7 @@ def semrush_scraper():
 
     # 5. IR A LA PÁGINA DE KEYWORD OVERVIEW (DB=ec => Ecuador)
     driver.get("https://es.semrush.com/analytics/keywordoverview/?db=ec")
-    time.sleep(4)
+    time.sleep(1)
 
     # 6. ENVIAR LA CARRERA AL INPUT DE KEYWORD Y HACER CLIC EN "Buscar"
     try:
@@ -121,7 +121,7 @@ def semrush_scraper():
         return
 
     # 7. ESPERAR A QUE APAREZCA EL VOLUMEN => <span data-testid="volume-total">
-    time.sleep(6)  # Ajusta si la carga es más lenta
+    time.sleep(5)  # Ajusta si la carga es más lenta
 
     # 8. EXTRAER VOLUMEN (kwo-widget-total => data-testid="volume-total")
     try:
@@ -150,7 +150,7 @@ def semrush_scraper():
         driver.quit()
         return
 
-    time.sleep(6)
+    time.sleep(5)
 
     # 10. EXTRAER "all-keywords" => 1,3K => parse => # de "palabras"
     try:

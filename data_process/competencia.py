@@ -12,14 +12,14 @@ dataOfertas = extraer_datos_tabla("ofertaCarrera")
 def obtener_resultado(busqueda, competencia):
     if busqueda >= 25:
         if competencia < 5:
-            return 20
+            return 25
         else:
-            return 15
+            return 20
     else:
         if competencia >= 5:
-            return 5
+            return 15
         else:
-            return 0
+            return 10
 
 
 def calc_competencia_virtual():
@@ -27,7 +27,12 @@ def calc_competencia_virtual():
     # oferta virtual
     competencia_virtual = dataOfertas[0]["Virtualidad"]
 
-    return obtener_resultado(busquedaWeb, competencia_virtual)
+    resVirtual = obtener_resultado(busquedaWeb, competencia_virtual)
+
+    if resVirtual >= 25:
+        resVirtual = 25
+
+    return resVirtual
 
 
 def calc_competencia_presencial():
@@ -35,4 +40,9 @@ def calc_competencia_presencial():
     # oferta presencial
     competencia_presencial = dataOfertas[0]["Presencialidad"]
 
-    return obtener_resultado(busquedaWeb, competencia_presencial)
+    resPresencial = obtener_resultado(busquedaWeb, competencia_presencial)
+
+    if resPresencial >= 25:
+        resPresencial = 25
+
+    return resPresencial

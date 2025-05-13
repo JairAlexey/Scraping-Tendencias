@@ -70,6 +70,12 @@ def calc_linkedin():
 
     resPromedioLat = round((resProfesionalesLat + resEmpleoLat + resAnunEmpLat) / 3, 2)
 
+    if resPromedioEc >= 15:
+        resPromedioEc = 15
+
+    if resPromedioLat >= 10:
+        resPromedioLat = 10
+
     # Suma promedios
     promGeneral = resPromedioEc + resPromedioLat
 
