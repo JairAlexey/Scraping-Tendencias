@@ -9,3 +9,6 @@
 
 # Ignorar archivos excel
 *.xlsx
+
+# Ignorar perfil de chrome
+profile/
