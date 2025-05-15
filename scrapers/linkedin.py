@@ -250,31 +250,62 @@ def linkedin_scraper():
     # Lista de ubicaciones a filtrar
     UBICACIONES = ["Ecuador", "América Latina"]
 
-    # Configuración del navegador "indetectable"
+    # CONFIGURACIÓN
+    user_data_dir = r"C:\Users\andrei.flores\Documents\Trabajo\Scraping-Tendencias\profile"
+    profile_directory = "Default"
+
+    # LIMPIEZA DEL LOCK
+    full_profile_path = os.path.join(user_data_dir, profile_directory)
+    singleton_lock = os.path.join(full_profile_path, "SingletonLock")
+    if os.path.exists(singleton_lock):
+        print("🧯 Eliminando archivo de bloqueo previo (SingletonLock)...")
+        os.remove(singleton_lock)
+
+    # OPCIONES DE CHROME
     options = uc.ChromeOptions()
     options.add_argument("--start-maximized")
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+    options.add_argument(f"--profile-directory={profile_directory}")
+
+    # LANZAR EL DRIVER
     driver = uc.Chrome(options=options)
 
-    # URL de la vista de carpetas
+    # -------------------------------------------------------------------------
+    # INICIAR SESIÓN EN LINKEDIN
+    # -------------------------------------------------------------------------
+    print("🌐 Abriendo LinkedIn Login...")
+    driver.get("https://www.linkedin.com/login")
+    time.sleep(3)
+
+    if "login" in driver.current_url:
+        print("🔐 Iniciando sesión en LinkedIn...")
+
+        try:
+            driver.find_element(By.ID, "username").send_keys(EMAIL)
+            driver.find_element(By.ID, "password").send_keys(PASSWORD + Keys.RETURN)
+            time.sleep(60)
+
+            if "linkedin.com/feed" in driver.current_url:
+                print("✅ Sesión iniciada correctamente.")
+            else:
+                print(
+                    "❌ No se redirigió al feed. Login fallido o requiere verificación."
+                )
+                driver.quit()
+                return
+
+        except Exception as e:
+            print(f"❌ Error durante el login: {e}")
+            driver.quit()
+            return
+    else:
+        print("✅ Ya estabas logueado. Redirigido automáticamente.")
+
+    # -------------------------------------------------------------------------
+    # ACCEDER A INSIGHTS
+    # -------------------------------------------------------------------------
     url = "https://www.linkedin.com/insights/saved?reportType=talent&tab=folders"
     driver.get(url)
-
-    # Si se requiere login, se hace de forma automática
-    if "login" in driver.current_url.lower():
-        print("🔐 Haciendo login automático...")
-        driver.find_element(By.ID, "username").send_keys(EMAIL)
-        driver.find_element(By.ID, "password").send_keys(PASSWORD + Keys.RETURN)
-        time.sleep(8)
-
-        # 🚨 Verificación de dos pasos
-        while "checkpoint" in driver.current_url or "verificar" in driver.page_source.lower():
-            print("\n🔒 Verificación en dos pasos detectada.")
-            print("👉 Por favor, introduce el código de verificación manualmente en el navegador.")
-            print("⏳ Esperando... Pulsa ENTER aquí cuando hayas terminado.")
-            input()
-            time.sleep(3)
-
-    print("✅ Sesión iniciada.")
     time.sleep(5)
 
     # Lista para almacenar los resultados finales

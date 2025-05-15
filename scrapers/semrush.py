@@ -43,13 +43,24 @@ def semrush_scraper():
         return
     print(f"🔍 Carrera a buscar: {carrera}")
 
-    # 2. CONFIGURACIÓN DEL NAVEGADOR
+    # CONFIGURACIÓN
+    user_data_dir = r"C:\Users\andrei.flores\Documents\Trabajo\Scraping-Tendencias\profile"
+    profile_directory = "Default"
+
+    # LIMPIEZA DEL LOCK
+    full_profile_path = os.path.join(user_data_dir, profile_directory)
+    singleton_lock = os.path.join(full_profile_path, "SingletonLock")
+    if os.path.exists(singleton_lock):
+        print("🧯 Eliminando archivo de bloqueo previo (SingletonLock)...")
+        os.remove(singleton_lock)
+
+    # OPCIONES DE CHROME
     options = uc.ChromeOptions()
     options.add_argument("--start-maximized")
-    options.add_argument(
-        r"--user-data-dir=C:\Users\andrei.flores\AppData\Local\Google\Chrome\User Data"
-    )
-    options.add_argument("--profile-directory=Default")
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+    options.add_argument(f"--profile-directory={profile_directory}")
+
+    # LANZAR EL DRIVER
     driver = uc.Chrome(options=options)
 
     # 3. IR A LA PÁGINA DE LOGIN
@@ -73,13 +84,11 @@ def semrush_scraper():
 
             # Hacer Enter o buscar un botón de login, si existe:
             input_password.send_keys(Keys.RETURN)
-            time.sleep(3)
+            time.sleep(10)
 
             # Verificar si salimos de la pantalla de login
             if "login" in driver.current_url:
-                print(
-                    "⚠️ Parece que no se pudo iniciar sesión. Revisa tus credenciales."
-                )
+                print("⚠️ Parece que no se pudo iniciar sesión. Revisa tus credenciales.")
                 driver.quit()
                 return
             else:
@@ -137,18 +146,23 @@ def semrush_scraper():
 
     # 9. HACER CLIC EN "Keyword Magic Tool"
     try:
-        # localizamos el link que contiene: "analytics.keywordmagic" (por ejemplo)
-        # o XPATH con "Keyword Magic Tool"
-        magic_link = driver.find_element(
-            By.XPATH, '//span[contains(text(), "Keyword Magic Tool")]/..'
+        # Esperamos a que aparezca el botón con label exacto
+        magic_tool_button = driver.find_element(
+            By.CSS_SELECTOR, 'srf-sidebar-list-item[label="Keyword Magic Tool"]'
         )
-        # Ese /.. sube al <a> contenedor
-        magic_link.click()
-        print("➡️ Navegando a Keyword Magic Tool...")
+        # Obtenemos el link del atributo href
+        magic_tool_href = magic_tool_button.get_attribute("href")
+
+        if magic_tool_href:
+            driver.get(magic_tool_href)
+            print("➡️ Navegando a Keyword Magic Tool vía href...")
+        else:
+            raise Exception("No se encontró el atributo href.")
     except Exception as e:
         print("❌ No se pudo encontrar/enlazar al 'Keyword Magic Tool':", e)
         driver.quit()
         return
+
 
     time.sleep(5)
 

@@ -7,4 +7,4 @@ print("---Linkedin---")
 linkedin_scraper()
 
 print("---Semrush---")
-semrush_scraper()
+#semrush_scraper()
