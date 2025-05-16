@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 from scrapers.utils import obtener_id_carrera, extraer_datos_tabla
 
 SEMRUSH = 0.15
@@ -16,7 +17,7 @@ def calc_busquedaWeb():
     idCarrera = obtener_id_carrera(carreraReferencia)
 
     # Ubicacion archivo
-    archivo = 'db/data.xlsx'
+    archivo = os.getenv("EXCEL_PATH")
 
     # Lectura archivo
     data = pd.read_excel(archivo, sheet_name=None)
@@ -59,6 +60,10 @@ def calc_busquedaWeb():
     # --- TRENDS ---
     hjTrendsBase = data["GoogleTrendsBase"]
     hjTrends = pd.DataFrame(extraer_datos_tabla("palabrasTrends"))
+
+    # 🔧 Normalizar columna 'Cantidad'
+    hjTrends["Cantidad"] = hjTrends["Cantidad"].astype(str).str.replace(",", ".", regex=False)
+    hjTrends["Cantidad"] = pd.to_numeric(hjTrends["Cantidad"], errors="coerce")
 
     # Extraer palabras trends base segun id
     palabrasCarreraBase = hjTrendsBase.loc[hjTrendsBase["ID Carrera"] == idCarrera]

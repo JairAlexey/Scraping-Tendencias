@@ -1,10 +1,14 @@
 import xlwings as xw
 import pandas as pd
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def extraer_datos_tabla(nombre_tabla):
     # Abrir Excel en modo invisible
     app = xw.App(visible=False)
-    wb = app.books.open("db/data.xlsx")
+    wb = app.books.open(os.getenv("EXCEL_PATH"))
     sht = wb.sheets["Input"]
 
     try:
@@ -56,7 +60,7 @@ def guardar_datos_excel(data, plataforma):
 
     # Abrir Excel en segundo plano
     app = xw.App(visible=False)
-    wb = app.books.open("db/data.xlsx")
+    wb = app.books.open(os.getenv("EXCEL_PATH"))
 
     # Lógica de plataformas
     if plataforma.lower() == "linkedin":
@@ -156,7 +160,7 @@ def guardar_datos_excel(data, plataforma):
 
 def obtener_id_carrera(nombre_carrera):
     try:
-        df = pd.read_excel("db/data.xlsx", sheet_name="Carreras", engine="openpyxl")
+        df = pd.read_excel(os.getenv("EXCEL_PATH"), sheet_name="Carreras", engine="openpyxl")
         carrera_filtrada = df[df["Carrera"] == nombre_carrera]
 
         if carrera_filtrada.empty:
@@ -169,7 +173,7 @@ def obtener_id_carrera(nombre_carrera):
 
 def obtener_codigos_por_id_carrera(id_carrera):
     try:
-        df = pd.read_excel("db/data.xlsx", sheet_name="Codigos", engine="openpyxl")
+        df = pd.read_excel(os.getenv("EXCEL_PATH"), sheet_name="Codigos", engine="openpyxl")
         codigos_filtrados = df[df["ID Carrera"] == id_carrera]
 
         if codigos_filtrados.empty:

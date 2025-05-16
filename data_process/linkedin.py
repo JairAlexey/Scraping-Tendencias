@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 ECU = 0.15
 LATAM = 0.10
@@ -6,7 +7,7 @@ LATAM = 0.10
 def calc_linkedin():
 
     # Archivo excel
-    archivo = "db/data.xlsx"
+    archivo = os.getenv("EXCEL_PATH")
 
     # Cargar el archivo y utillizar hoja de 'Linkedin'
     data = pd.read_excel(archivo, sheet_name='LinkedIn')
