@@ -40,19 +40,28 @@ def calc_busquedaWeb():
     visionGeneralBase = datosSemrushCarrera_dict['Visión General']
     visionGeneralConsulta = datosSemrushConsulta_dict['Visión General']
 
-    resVisionGeneral = ((visionGeneralConsulta * SEMRUSH) / visionGeneralBase) * 100
+    if visionGeneralBase != 0:
+        resVisionGeneral = ((visionGeneralConsulta * SEMRUSH) / visionGeneralBase) * 100
+    else:
+        resVisionGeneral = 0  # O algún valor por defecto, o puedes lanzar un warning
 
     # Palabras
     palabrasBase = datosSemrushCarrera_dict['Palabras']
     palabrasConsulta = datosSemrushConsulta_dict['Palabras']
 
-    resPalabras = ((palabrasConsulta * SEMRUSH) / palabrasBase) * 100
+    if palabrasBase != 0:
+        resPalabras = ((palabrasConsulta * SEMRUSH) / palabrasBase) * 100
+    else:
+        resPalabras = 0
 
     # Volumen
     volumenBase = datosSemrushCarrera_dict['Volumen']
     volumenConsulta = datosSemrushConsulta_dict['Volumen']
 
-    resVolumen = ((volumenConsulta * SEMRUSH) / volumenBase) * 100
+    if volumenBase != 0:
+        resVolumen = ((volumenConsulta * SEMRUSH) / volumenBase) * 100
+    else:
+        resVolumen = 0
 
     # Calcular el promedio de las 3 columnas
     promedioSemrush = round(((resVisionGeneral + resPalabras + resVolumen) / 3), 2)
@@ -73,7 +82,10 @@ def calc_busquedaWeb():
     promedio_consultaPalabras = hjTrends["Cantidad"].nlargest(6).mean()
 
     # Sumar los promedios
-    promedioTrends = round(((promedio_consultaPalabras * TRENDS) / promedio_basePalabras) * 100, 2)
+    if promedio_basePalabras != 0:
+        promedioTrends = round(((promedio_consultaPalabras * TRENDS) / promedio_basePalabras) * 100, 2)
+    else:
+        promedioTrends = 0
 
     # --- CALCULO TOTAL ---
     # Suma promedios plataformas semrush y trends
