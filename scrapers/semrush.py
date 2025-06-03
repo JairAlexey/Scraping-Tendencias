@@ -44,7 +44,7 @@ def semrush_scraper():
     print(f"🔍 Carrera a buscar: {carrera}")
 
     # CONFIGURACIÓN
-    user_data_dir = r"C:\Users\andrei.flores\Documents\Trabajo\Scraping-Tendencias\profile"
+    user_data_dir = r"C:\Users\Alexey\Documents\UDLATrabajo\Scraping-Tendencias\profile"
     profile_directory = "Default"
 
     # LIMPIEZA DEL LOCK

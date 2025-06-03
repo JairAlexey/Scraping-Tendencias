@@ -50,80 +50,110 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
         div_ubicacion = driver.find_element(
             By.CSS_SELECTOR, 'div.query-facet[data-query-type="LOCATION"]'
         )
-
         # Desplazar la vista hasta el div
         driver.execute_script("arguments[0].scrollIntoView(true);", div_ubicacion)
         time.sleep(3)
 
+        # Verificar si el filtro actual ya es el deseado
         try:
-            # Intentar borrar filtros previos
-            boton_borrar = div_ubicacion.find_element(
-                By.CSS_SELECTOR, "button[data-test-clear-all]"
+            chips_aplicados = div_ubicacion.find_elements(
+                By.CSS_SELECTOR, "div.facet-pill__pill-text"
             )
-            boton_borrar.click()
-            print("🧹 Filtros borrados")
-            time.sleep(5)
-        except:
-            print("ℹ️ No había filtros que borrar")
+            ubicaciones_aplicadas = []
+            for chip in chips_aplicados:
+                raw_text = chip.text.strip()
+                print(f"🔎 Texto crudo del filtro aplicado: '{raw_text}'")
+                # Normalizar el texto: sin símbolos, en minúsculas
+                clean_text = ''.join(c for c in raw_text if c.isalnum() or c.isspace()).strip().lower()
+                ubicaciones_aplicadas.append(clean_text)
 
-        # Desplegar el input de ubicación
-        try:
-            btn_mostrar_input = div_ubicacion.find_element(
-                By.CSS_SELECTOR, "button.query-facet__add-button"
-            )
-            btn_mostrar_input.click()
-            print("➕ Botón '+' de añadir filtro clickeado")
-            time.sleep(5)
+            print(f"🔍 Ubicaciones normalizadas encontradas: {ubicaciones_aplicadas}")
+            ub_comparar = ''.join(c for c in UBICACION if c.isalnum() or c.isspace()).strip().lower()
+
+            if ub_comparar in ubicaciones_aplicadas:
+                print(f"✅ La ubicación '{UBICACION}' ya está aplicada. No se modifica el filtro.")
+                saltar_filtro = True
+            else:
+                print(f"🚫 La ubicación '{UBICACION}' NO está aplicada.")
+                saltar_filtro = False
         except Exception as e:
-            print("⚠️ No se pudo hacer clic en el botón '+':", e)
+            print("⚠️ No se pudo verificar los filtros aplicados:", e)
+            saltar_filtro = False
 
-        # Ingresar la ubicación en el input
-        input_field = div_ubicacion.find_element(
-            By.CSS_SELECTOR, "input.artdeco-typeahead__input"
-        )
-        input_field.clear()
-        input_field.send_keys(UBICACION)
-        time.sleep(5)
 
-        # Buscar y seleccionar la sugerencia correspondiente
-        sugerencias = div_ubicacion.find_elements(
-            By.CSS_SELECTOR, "ul.artdeco-typeahead__results-list li"
-        )
-        match = False
-        for sug in sugerencias:
-            txt_sug = sug.text.strip().lower()
-            if UBICACION.lower() in txt_sug:
-                time.sleep(3)
-                sug.click()
-                print(f"📌 Ubicación seleccionada: {txt_sug}")
-                match = True
-                break
-        if not match:
-            print(f"❌ No se encontró sugerencia para: {UBICACION}")
-            return None
-
-        time.sleep(3)
-        try:
-            # Confirmar la selección de la ubicación
-            btn_confirmar = div_ubicacion.find_element(
-                By.CSS_SELECTOR, "button.artdeco-pill__button"
-            )
-            btn_confirmar.click()
-            print("✅ Confirmación con botón '+'")
+        if saltar_filtro:
             time.sleep(3)
-        except:
-            print("⚠️ Botón '+' no encontrado")
+            print("⏭️ Saltando pasos de filtro porque ya está aplicado.")
+        else:
+            # Intentar borrar filtros previos
+            try:
+                boton_borrar = div_ubicacion.find_element(
+                    By.CSS_SELECTOR, "button[data-test-clear-all]"
+                )
+                boton_borrar.click()
+                print("🧹 Filtros borrados")
+                time.sleep(5)
+            except:
+                print("ℹ️ No había filtros que borrar")
 
-        try:
-            # Aplicar el filtro
-            btn_aplicar = driver.find_element(
-                By.CSS_SELECTOR, "button[data-test-search-filters-apply-btn]"
+            # Desplegar el input de ubicación
+            try:
+                btn_mostrar_input = div_ubicacion.find_element(
+                    By.CSS_SELECTOR, "button.query-facet__add-button"
+                )
+                btn_mostrar_input.click()
+                print("➕ Botón '+' de añadir filtro clickeado")
+                time.sleep(10)
+            except Exception as e:
+                print("⚠️ No se pudo hacer clic en el botón '+':", e)
+
+            # Ingresar la ubicación en el input
+            input_field = div_ubicacion.find_element(
+                By.CSS_SELECTOR, "input.artdeco-typeahead__input"
             )
-            btn_aplicar.click()
-            print("🎯 Filtro aplicado")
-        except:
-            print("❌ Botón 'Aplicar' no encontrado")
-            return None
+            input_field.clear()
+            input_field.send_keys(UBICACION)
+            time.sleep(5)
+
+            # Buscar y seleccionar la sugerencia correspondiente
+            sugerencias = div_ubicacion.find_elements(
+                By.CSS_SELECTOR, "ul.artdeco-typeahead__results-list li"
+            )
+            match = False
+            for sug in sugerencias:
+                txt_sug = sug.text.strip().lower()
+                if UBICACION.lower() in txt_sug:
+                    time.sleep(3)
+                    sug.click()
+                    print(f"📌 Ubicación seleccionada: {txt_sug}")
+                    match = True
+                    break
+            if not match:
+                print(f"❌ No se encontró sugerencia para: {UBICACION}")
+                return None
+
+            time.sleep(3)
+            try:
+                # Confirmar la selección de la ubicación
+                btn_confirmar = div_ubicacion.find_element(
+                    By.CSS_SELECTOR, "button.artdeco-pill__button"
+                )
+                btn_confirmar.click()
+                print("✅ Confirmación con botón '+'")
+                time.sleep(3)
+            except:
+                print("⚠️ Botón '+' no encontrado")
+
+            try:
+                # Aplicar el filtro
+                btn_aplicar = driver.find_element(
+                    By.CSS_SELECTOR, "button[data-test-search-filters-apply-btn]"
+                )
+                btn_aplicar.click()
+                print("🎯 Filtro aplicado")
+            except:
+                print("❌ Botón 'Aplicar' no encontrado")
+                return None
 
         time.sleep(15)
         print(f"⏳ Extrayendo datos para {UBICACION}...")
@@ -238,6 +268,7 @@ def buscar_proyecto_en_pagina(
 
 
 def linkedin_scraper():
+
     # -----------------------------------------------------------------------------
     # CONFIGURACIÓN: Cargar variables de entorno y definir parámetros iniciales
     # -----------------------------------------------------------------------------
@@ -251,7 +282,7 @@ def linkedin_scraper():
     UBICACIONES = ["Ecuador", "América Latina"]
 
     # CONFIGURACIÓN
-    user_data_dir = r"C:\Users\andrei.flores\Documents\Trabajo\Scraping-Tendencias\profile"
+    user_data_dir = r"C:\Users\Alexey\Documents\UDLATrabajo\Scraping-Tendencias\profile"
     profile_directory = "Default"
 
     # LIMPIEZA DEL LOCK
@@ -266,8 +297,19 @@ def linkedin_scraper():
     options.add_argument("--start-maximized")
     options.add_argument(f"--user-data-dir={user_data_dir}")
     options.add_argument(f"--profile-directory={profile_directory}")
+    options.add_argument("--no-first-run")
+    options.add_argument("--no-default-browser-check")
+    options.add_argument("--disable-sync")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-background-networking")
+    options.add_argument("--disable-features=EnableChromeSignin")
+    prefs = {
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False,
+    }
+    options.add_experimental_option("prefs", prefs)
 
-    # LANZAR EL DRIVER
     driver = uc.Chrome(options=options)
 
     # -------------------------------------------------------------------------
@@ -281,9 +323,14 @@ def linkedin_scraper():
         print("🔐 Iniciando sesión en LinkedIn...")
 
         try:
-            driver.find_element(By.ID, "username").send_keys(EMAIL)
-            driver.find_element(By.ID, "password").send_keys(PASSWORD + Keys.RETURN)
-            time.sleep(60)
+            campo_usuario = driver.find_element(By.ID, "username")
+            campo_contrasena = driver.find_element(By.ID, "password")
+
+            campo_usuario.clear()
+            campo_usuario.send_keys(EMAIL)
+            campo_contrasena.clear()
+            campo_contrasena.send_keys(PASSWORD + Keys.RETURN)
+            time.sleep(3)
 
             if "linkedin.com/feed" in driver.current_url:
                 print("✅ Sesión iniciada correctamente.")
