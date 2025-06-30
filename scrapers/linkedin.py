@@ -52,7 +52,7 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
         )
         # Desplazar la vista hasta el div
         driver.execute_script("arguments[0].scrollIntoView(true);", div_ubicacion)
-        time.sleep(3)
+        time.sleep(5)
 
         # Verificar si el filtro actual ya es el deseado
         try:
@@ -82,7 +82,7 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
 
 
         if saltar_filtro:
-            time.sleep(3)
+            time.sleep(5)
             print("⏭️ Saltando pasos de filtro porque ya está aplicado.")
         else:
             # Intentar borrar filtros previos
@@ -103,7 +103,7 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
                 )
                 btn_mostrar_input.click()
                 print("➕ Botón '+' de añadir filtro clickeado")
-                time.sleep(10)
+                time.sleep(5)
             except Exception as e:
                 print("⚠️ No se pudo hacer clic en el botón '+':", e)
 
@@ -132,7 +132,7 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
                 print(f"❌ No se encontró sugerencia para: {UBICACION}")
                 return None
 
-            time.sleep(3)
+            time.sleep(5)
             try:
                 # Confirmar la selección de la ubicación
                 btn_confirmar = div_ubicacion.find_element(
@@ -140,7 +140,7 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
                 )
                 btn_confirmar.click()
                 print("✅ Confirmación con botón '+'")
-                time.sleep(3)
+                time.sleep(5)
             except:
                 print("⚠️ Botón '+' no encontrado")
 
@@ -155,7 +155,7 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
                 print("❌ Botón 'Aplicar' no encontrado")
                 return None
 
-        time.sleep(15)
+        time.sleep(5)
         print(f"⏳ Extrayendo datos para {UBICACION}...")
 
         # Extraer datos de las tarjetas superiores
@@ -177,7 +177,7 @@ def extraer_datos_reporte(driver, UBICACION, carpeta_nombre, proyecto_nombre):
                 ).text.strip()
                 if "profesionales" == tipo:
                     profesionales = valor
-                elif "anuncios de empleo" in tipo:
+                elif "anuncio de empleo" in tipo or "anuncios de empleo" in tipo:
                     anuncios_empleo = valor
             except Exception as e:
                 print("⚠️ Error al extraer datos de una tarjeta:", e)
