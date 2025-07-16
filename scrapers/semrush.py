@@ -38,7 +38,7 @@ def semrush_scraper():
         return
     print(f"🔍 Carrera a buscar: {carrera}")
 
-    user_data_dir = r"C:\Users\Alexey\Documents\UDLATrabajo\Scraping-Tendencias\profile"
+    user_data_dir = r"C:\Users\User\Documents\TRABAJO - UDLA\Scraping-Tendencias\profile"
     profile_directory = "Default"
     full_profile_path = os.path.join(user_data_dir, profile_directory)
     singleton_lock = os.path.join(full_profile_path, "SingletonLock")

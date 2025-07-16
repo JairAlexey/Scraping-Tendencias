@@ -39,7 +39,7 @@ mkdir "profile"
 ### 2. Abrir Chrome con ese perfil
 
 ```bash
-start chrome --user-data-dir="C:\Users\Alexey\Documents\UDLATrabajo\Scraping-Tendencias\profile"
+start chrome --user-data-dir="C:\Users\User\Documents\TRABAJO - UDLA\Scraping-Tendencias\profile"
 ```
 
 Una vez abierta la ventana de Chrome:
