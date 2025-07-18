@@ -61,6 +61,10 @@ def calc_mercado():
         return
 
     datos_consultar = resultados_carreraConsultar[0]
+    if not isinstance(datos_consultar, dict):
+        print(f"ERROR: datos_consultar is not a dict: {datos_consultar}")
+        return
+
     resultados_carreraConsultar_normalizado = {
         key.replace("%", "").strip(): value for key, value in datos_consultar.items()
     }
@@ -71,6 +75,13 @@ def calc_mercado():
     for hoja in HOJAS:
         valor_ref = resultados_carreraReferencia.get(hoja, 0)
         valor_consultar = resultados_carreraConsultar_normalizado.get(hoja, 0)
+
+        try:
+            valor_ref = float(valor_ref)
+            valor_consultar = float(valor_consultar)
+        except (ValueError, TypeError):
+            print(f"ERROR: valor_ref o valor_consultar no es numérico en hoja '{hoja}': valor_ref={valor_ref}, valor_consultar={valor_consultar}")
+            continue
 
         if valor_ref:
             resultado = (valor_consultar * MERCADO / valor_ref) * 100
