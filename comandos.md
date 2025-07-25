@@ -20,9 +20,23 @@ Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 ```env
 LINKEDIN_USER=tu_correo@ejemplo.com
 LINKEDIN_PASS=tu_contraseña_segura
+SEMRUSH_USER=tu_correo@ejemplo.com
+SEMRUSH_PASS=tu_contraseña_semrush
+
+# Rutas de archivos Excel (separadas por comas)
+# Puedes definir tantos archivos como necesites
+EXCEL_PATHS=db/archivo1.xlsx,db/archivo2.xlsx,db/archivo3.xlsx
 ```
 
-Estas credenciales se usan para el login automático en LinkedIn.
+---
+
+## 🧪 Verificar configuración
+
+Para verificar que los archivos Excel están correctamente configurados:
+
+```bash
+python -c "from scrapers.utils import obtener_rutas_excel; print('Archivos configurados:', obtener_rutas_excel())"
+```
 
 ---
 

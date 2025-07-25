@@ -4,10 +4,14 @@ import os
 ECU = 0.15
 LATAM = 0.10
 
-def calc_linkedin():
+def calc_linkedin(ruta_excel=None):
 
-    # Archivo excel
-    archivo = os.getenv("EXCEL_PATH")
+    # Archivo excel - usar ruta específica o fallback a variable de entorno
+    if ruta_excel is None:
+        archivo = os.getenv("EXCEL_PATH")
+    else:
+        archivo = ruta_excel
+        print(f"Usando ruta específica: {archivo}")
 
     # Cargar el archivo y utillizar hoja de 'Linkedin'
     data = pd.read_excel(archivo, sheet_name='LinkedIn')

@@ -9,9 +9,9 @@ MERCADO = 0.15
 ARCHIVO_MERCADO = "db/mercado.xlsx"
 HOJAS = ["Total Ingresos", "Ventas 12", "Ventas 0"]
 
-def calc_mercado():
+def calc_mercado(ruta_excel=None):
     # Obtener carrera de referencia
-    carrera_referencia = extraer_datos_tabla("carreraReferencia")
+    carrera_referencia = extraer_datos_tabla("carreraReferencia", ruta_excel)
     if not carrera_referencia:
         print("ERROR: No se pudieron obtener datos de la carrera de referencia.")
         return

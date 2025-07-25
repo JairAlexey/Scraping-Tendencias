@@ -5,10 +5,10 @@ from scrapers.utils import obtener_id_carrera, extraer_datos_tabla
 SEMRUSH = 0.15
 TRENDS = 0.20
 
-def calc_busquedaWeb():
+def calc_busquedaWeb(ruta_excel=None):
 
     # Extraer carrera refereencia
-    carreraReferencia = extraer_datos_tabla("carreraReferencia")
+    carreraReferencia = extraer_datos_tabla("carreraReferencia", ruta_excel)
     if not carreraReferencia:
         print("No se pudo obtener la carrera de referencia.")
         return None
@@ -16,8 +16,11 @@ def calc_busquedaWeb():
     # Obtener ID Carrera referencia
     idCarrera = obtener_id_carrera(carreraReferencia)
 
-    # Ubicacion archivo
-    archivo = os.getenv("EXCEL_PATH")
+    # Ubicacion archivo - usar ruta específica o fallback a variable de entorno
+    if ruta_excel is None:
+        archivo = os.getenv("EXCEL_PATH")
+    else:
+        archivo = ruta_excel
 
     # Lectura archivo
     data = pd.read_excel(archivo, sheet_name=None)

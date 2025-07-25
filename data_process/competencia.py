@@ -2,12 +2,6 @@ import pandas as pd
 from data_process.busquedaWeb import calc_busquedaWeb
 from scrapers.utils import extraer_datos_tabla
 
-# Calculo busqueda web
-busquedaWeb = calc_busquedaWeb()
-
-# Extrayendo ofertas
-dataOfertas = extraer_datos_tabla("ofertaCarrera")
-
 # Calcular resultado para competencia virtual y presencial
 def obtener_resultado(busqueda, competencia):
     if busqueda >= 25:
@@ -22,7 +16,12 @@ def obtener_resultado(busqueda, competencia):
             return 10
 
 
-def calc_competencia_virtual():
+def calc_competencia_virtual(ruta_excel=None):
+    # Calculo busqueda web para este archivo específico
+    busquedaWeb = calc_busquedaWeb(ruta_excel)
+    
+    # Extrayendo ofertas para este archivo específico
+    dataOfertas = extraer_datos_tabla("ofertaCarrera", ruta_excel)
 
     # oferta virtual
     competencia_virtual = dataOfertas[0]["Virtualidad"]
@@ -35,7 +34,12 @@ def calc_competencia_virtual():
     return resVirtual
 
 
-def calc_competencia_presencial():
+def calc_competencia_presencial(ruta_excel=None):
+    # Calculo busqueda web para este archivo específico
+    busquedaWeb = calc_busquedaWeb(ruta_excel)
+    
+    # Extrayendo ofertas para este archivo específico
+    dataOfertas = extraer_datos_tabla("ofertaCarrera", ruta_excel)
 
     # oferta presencial
     competencia_presencial = dataOfertas[0]["Presencialidad"]

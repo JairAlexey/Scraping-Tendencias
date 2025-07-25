@@ -9,14 +9,12 @@ def obtener_rutas_excel():
     """
     Obtiene las rutas de archivos Excel desde las variables de entorno.
     Soporta EXCEL_PATHS (múltiples rutas separadas por comas) o EXCEL_PATH (una sola ruta).
-    Devuelve una lista de rutas válidas (máximo 3, mínimo 1).
+    Devuelve una lista de rutas válidas (mínimo 1).
     """
     # Intentar obtener múltiples rutas primero
     excel_paths = os.getenv("EXCEL_PATHS")
     if excel_paths:
         rutas = [ruta.strip() for ruta in excel_paths.split(",") if ruta.strip()]
-        # Limitar a máximo 3 rutas
-        rutas = rutas[:3]
         
         # Verificar que los archivos existen
         rutas_validas = []
