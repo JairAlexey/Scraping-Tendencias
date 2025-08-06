@@ -10,9 +10,8 @@ from scrapers.utils import obtener_rutas_excel
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Certificaciones - Análisis Multi-Excel", 
-    page_icon="📊",
-    layout="wide"
+    page_title="Certificaciones", 
+    layout="centered"
 )
 
 # Función para obtener el nombre del archivo sin extensión
@@ -40,11 +39,17 @@ except Exception as e:
 nombres_pestanas = [obtener_nombre_archivo(ruta) for ruta in rutas_validas]
 
 # Título principal
-st.title("📊 Certificaciones - Análisis Multi-Excel")
-st.markdown(f"**Archivos configurados:** {len(rutas_validas)}")
+st.title("Certificaciones")
 
-# Crear las pestañas
-tabs = st.tabs(nombres_pestanas)
+# Selector de certificación
+certificacion_seleccionada = st.selectbox(
+    "Selecciona una certificación:",
+    nombres_pestanas
+)
+
+# Obtener la ruta del archivo seleccionado
+indice_seleccionado = nombres_pestanas.index(certificacion_seleccionada)
+ruta_excel_seleccionada = rutas_validas[indice_seleccionado]
 
 # Lista de parámetros
 parametros = ["Búsqueda Web", "LinkedIN", "Competencia", "Mercado", "Total"]
@@ -96,9 +101,6 @@ def calcular_virtual_competencia(ruta_excel):
 
 # Función para procesar un archivo Excel específico
 def procesar_excel(ruta_excel, nombre_archivo):
-    st.subheader(f"📋 Evaluación: {nombre_archivo}")
-    st.markdown(f"**Archivo:** `{ruta_excel}`")
-    
     # Diccionarios para mapear resultados
     presencialidad_resultados = []
     virtualidad_resultados = []
@@ -156,14 +158,12 @@ def procesar_excel(ruta_excel, nombre_archivo):
 
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
 
-# Procesar cada archivo en su pestaña correspondiente
-for i, (tab, ruta_excel, nombre_archivo) in enumerate(zip(tabs, rutas_validas, nombres_pestanas)):
-    with tab:
-        procesar_excel(ruta_excel, nombre_archivo)
+# Procesar el archivo seleccionado
+st.subheader("Evaluación")
+procesar_excel(ruta_excel_seleccionada, certificacion_seleccionada)
 
-# Mostrar rango de evaluación en todas las pestañas (información general)
-st.markdown("---")
-st.subheader("📊 Rango Evaluación Final")
+# Mostrar rango de evaluación
+st.subheader("Rango Evaluación Final")
 
 df_rango = pd.DataFrame(
     {

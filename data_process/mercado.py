@@ -32,10 +32,17 @@ def calc_mercado(ruta_excel=None):
         return
     
     # Procesar cada hoja del archivo Excel
+    print(f"\n=== PROCESANDO DATOS DE REFERENCIA ===")
+    print(f"Carrera de referencia: {carrera_referencia}")
+    print(f"ID carrera: {id_carrera}")
+    print(f"Códigos de actividad económica: {codigos}")
+    
     resultados_carreraReferencia = {}
     for hoja in HOJAS:
+        print(f"\n--- Procesando hoja: {hoja} ---")
         try:
             df = pd.read_excel(ARCHIVO_MERCADO, sheet_name=hoja)
+            print(f"Filas totales en la hoja: {len(df)}")
         except Exception as e:
             print(f"ERROR: Fallo al leer la hoja '{hoja}' del archivo '{ARCHIVO_MERCADO}': {e}.")
             resultados_carreraReferencia[hoja] = 0
@@ -51,49 +58,81 @@ def calc_mercado(ruta_excel=None):
             df["ACTIVIDAD ECONÓMICA"] = df["ACTIVIDAD ECONÓMICA"].astype(str).str.strip()
 
         df_filtrado = df[df["ACTIVIDAD ECONÓMICA"].isin(codigos)]
+        print(f"Filas que coinciden con los códigos: {len(df_filtrado)}")
+        if len(df_filtrado) > 0:
+            print(f"Códigos encontrados: {df_filtrado['ACTIVIDAD ECONÓMICA'].tolist()}")
+            print(f"Valores 2024 encontrados: {df_filtrado['2024'].tolist()}")
+        
         total = df_filtrado["2024"].sum()
+        print(f"Total para {hoja}: {total}")
         resultados_carreraReferencia[hoja] = total
 
     # Datos de la carrera a consultar
+    print(f"\n=== DATOS DE LA CARRERA A CONSULTAR ===")
     resultados_carreraConsultar = extraer_datos_tabla("mercado")
     if not resultados_carreraConsultar:
         print("ERROR: No se pudieron obtener datos de la carrera a consultar.")
         return
 
+    print(f"Datos brutos de consulta: {resultados_carreraConsultar}")
+    
     datos_consultar = resultados_carreraConsultar[0]
     if not isinstance(datos_consultar, dict):
         print(f"ERROR: datos_consultar is not a dict: {datos_consultar}")
         return
 
+    print(f"Primer elemento (datos_consultar): {datos_consultar}")
+    
     resultados_carreraConsultar_normalizado = {
         key.replace("%", "").strip(): value for key, value in datos_consultar.items()
     }
+    print(f"Datos normalizados: {resultados_carreraConsultar_normalizado}")
+
+    print(f"\n=== RESUMEN DE VALORES ===")
+    print(f"Resultados carrera de referencia: {resultados_carreraReferencia}")
+    print(f"Resultados carrera a consultar: {resultados_carreraConsultar_normalizado}")
+    print(f"Factor MERCADO: {MERCADO}")
 
     # Calcular el promedio
+    print(f"\n=== PROCESO DE CÁLCULO ===")
     total = 0
     cantidad = 0
     for hoja in HOJAS:
+        print(f"\n--- Calculando para hoja: {hoja} ---")
         valor_ref = resultados_carreraReferencia.get(hoja, 0)
         valor_consultar = resultados_carreraConsultar_normalizado.get(hoja, 0)
+
+        print(f"Valor referencia ({hoja}): {valor_ref}")
+        print(f"Valor consultar ({hoja}): {valor_consultar}")
 
         try:
             valor_ref = float(valor_ref)
             valor_consultar = float(valor_consultar)
+            print(f"Valores convertidos a float - Ref: {valor_ref}, Consultar: {valor_consultar}")
         except (ValueError, TypeError):
             print(f"ERROR: valor_ref o valor_consultar no es numérico en hoja '{hoja}': valor_ref={valor_ref}, valor_consultar={valor_consultar}")
             continue
 
         if valor_ref:
             resultado = (valor_consultar * MERCADO / valor_ref) * 100
+            print(f"Cálculo: ({valor_consultar} * {MERCADO} / {valor_ref}) * 100 = {resultado}")
             total += resultado
             cantidad += 1
+            print(f"Total acumulado: {total}, Cantidad: {cantidad}")
         else:
+            print(f"Valor de referencia es 0 o None, saltando esta hoja")
             pass # No imprimir nada si no hay un error crítico aquí
 
     promedio = round(total / cantidad, 2) if cantidad else 0
+    print(f"\n=== RESULTADO FINAL ===")
+    print(f"Total suma de resultados: {total}")
+    print(f"Cantidad de hojas procesadas: {cantidad}")
     print(f"Promedio calculado: {promedio}")
 
     if promedio >= 15:
+        print(f"Promedio >= 15, limitando a 15")
         promedio = 15
+    
+    print(f"Promedio final retornado: {promedio}")
 
     return promedio
