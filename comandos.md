@@ -26,6 +26,9 @@ SEMRUSH_PASS=tu_contraseña_semrush
 # Rutas de archivos Excel (separadas por comas)
 # Puedes definir tantos archivos como necesites
 EXCEL_PATHS=db/archivo1.xlsx,db/archivo2.xlsx,db/archivo3.xlsx
+
+---Ejemplo---
+EXCEL_PATHS=db/SeguridadInformaticaProteccionDeDatos.xlsx, db/Informatica.xlsx
 ```
 
 ---
