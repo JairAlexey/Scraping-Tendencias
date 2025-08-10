@@ -130,215 +130,191 @@ def buscar_carrera_semrush(driver, carrera):
 
 def extraer_datos_semrush(driver, carrera):
     """
-    Función auxiliar para extraer los datos de Semrush
-    Retorna una tupla (vision_general, palabras, volumen)
+    Extrae los datos de Semrush de forma directa y fluida:
+    - Visión General: span.kwo-widget-total[data-testid="volume-total"]
+    - Si hay valor, navega a Magic Tool y extrae:
+        - Palabras: div.sm-keywords-table-header__item-value[data-testid="all-keywords"]
+        - Volumen: div.sm-keywords-table-header__item-value[data-testid="total-volume"]
     """
-    # 1. EXTRAER VISIÓN GENERAL (Keyword Overview)
-    print("⏳ Esperando a que carguen los resultados...")
-    time.sleep(8)  # Tiempo adicional para que cargue completamente
+    time.sleep(6)  # Esperar carga inicial
 
-    vision_general = 0
-    selectores_vision_general = [
-        # Selector específico para el widget de "Volumen" (NO "Volumen global")
-        'div.kwo-volume-widget-layout .kwo-na',  # Buscar kwo-na dentro del widget de volumen específico
-        '.kwo-volume-widget-layout .kwo-na',     # Alternativo sin div
-        'span.kwo-widget-total[data-testid="volume-total"]',  # Por si tiene datos reales
-        'span[data-testid="volume-total"]',  # Selector alternativo
-        'div.kwo-na',  # Selector genérico como respaldo
-        '.kwo-na',     # Selector alternativo sin div
-    ]
-    
-    print("🔍 Buscando elemento de Visión General...")
-    
-    # Primero hacer un diagnóstico de la página
-    print("🔬 Diagnóstico de página:")
+    # 1. VISIÓN GENERAL
     try:
-        current_url = driver.current_url
-        print(f"   URL actual: {current_url[:100]}...")
-        
-        # Buscar específicamente los elementos que sabemos que contienen datos
-        print("   🎯 Buscando elementos específicos...")
-        
-        # Buscar el widget de "Volumen" (el que queremos) vs "Volumen global" (el que NO queremos)
-        try:
-            # Widget de "Volumen" específico
-            volume_widget = driver.find_elements(By.CSS_SELECTOR, '.kwo-volume-widget-layout')
-            print(f"   📊 Widgets de volumen específico encontrados: {len(volume_widget)}")
-            for i, widget in enumerate(volume_widget, 1):
-                try:
-                    # Buscar kwo-na dentro de este widget específico
-                    kwo_na_elements = widget.find_elements(By.CSS_SELECTOR, '.kwo-na')
-                    for j, elem in enumerate(kwo_na_elements, 1):
-                        text = elem.text.strip()
-                        print(f"      Widget {i}, elemento {j}: Texto: '{text}' | Tag: '{elem.tag_name}'")
-                except:
-                    continue
-        except Exception as e:
-            print(f"   ❌ Error buscando volume-widget-layout: {e}")
-        
-        # Buscar el widget de "Volumen global" (para comparación)
-        try:
-            global_volume_elements = driver.find_elements(By.CSS_SELECTOR, 'span[data-testid="global-volume-total"]')
-            print(f"   📊 Elementos de volumen GLOBAL (NO queremos estos): {len(global_volume_elements)}")
-            for i, elem in enumerate(global_volume_elements, 1):
-                try:
-                    text = elem.text.strip()
-                    print(f"      Global {i}: Texto: '{text}' (ESTE NO ES EL QUE QUEREMOS)")
-                except:
-                    continue
-        except Exception as e:
-            print(f"   ❌ Error buscando global-volume-total: {e}")
-        
-        # Buscar span con data-testid="volume-total" (el específico, no el global)
-        try:
-            volume_elements = driver.find_elements(By.CSS_SELECTOR, 'span[data-testid="volume-total"]')
-            print(f"   📊 Elementos con data-testid='volume-total': {len(volume_elements)}")
-            for i, elem in enumerate(volume_elements, 1):
-                try:
-                    text = elem.text.strip()
-                    class_name = elem.get_attribute("class") or ""
-                    print(f"      {i}. Texto: '{text}' | Clase: '{class_name}'")
-                except:
-                    continue
-        except Exception as e:
-            print(f"   ❌ Error buscando volume-total: {e}")
-        
-        # Buscar elementos con clase kwo-widget-total (pero filtrar el global)
-        try:
-            kwo_elements = driver.find_elements(By.CSS_SELECTOR, '.kwo-widget-total')
-            print(f"   📊 Elementos con clase 'kwo-widget-total': {len(kwo_elements)}")
-            for i, elem in enumerate(kwo_elements, 1):
-                try:
-                    text = elem.text.strip()
-                    testid = elem.get_attribute("data-testid") or ""
-                    # Identificar si es el global (que no queremos)
-                    es_global = testid == "global-volume-total"
-                    marca = "🚫 GLOBAL (NO QUEREMOS)" if es_global else "✅ ESPECÍFICO"
-                    print(f"      {i}. Texto: '{text}' | TestID: '{testid}' | {marca}")
-                except:
-                    continue
-        except Exception as e:
-            print(f"   ❌ Error buscando kwo-widget-total: {e}")
-        
-        # Buscar elementos con clase kwo-na
-        try:
-            kwo_na_elements = driver.find_elements(By.CSS_SELECTOR, '.kwo-na')
-            print(f"   📊 Elementos con clase 'kwo-na': {len(kwo_na_elements)}")
-            for i, elem in enumerate(kwo_na_elements, 1):
-                try:
-                    text = elem.text.strip()
-                    tag_name = elem.tag_name
-                    print(f"      {i}. Texto: '{text}' | Tag: '{tag_name}'")
-                except:
-                    continue
-        except Exception as e:
-            print(f"   ❌ Error buscando kwo-na: {e}")
-        
-        # Búsqueda amplia de todos los elementos que contienen "2,4K" o datos similares
-        try:
-            all_spans = driver.find_elements(By.CSS_SELECTOR, 'span')
-            data_spans = []
-            for span in all_spans:
-                try:
-                    text = span.text.strip()
-                    if text and ('K' in text.upper() or any(char.isdigit() for char in text)) and len(text) < 20:
-                        class_name = span.get_attribute("class") or ""
-                        testid = span.get_attribute("data-testid") or ""
-                        data_spans.append({
-                            "text": text,
-                            "class": class_name,
-                            "testid": testid
-                        })
-                except:
-                    continue
-            
-            if data_spans:
-                print(f"   📊 Spans con datos numéricos encontrados: {len(data_spans)}")
-                for i, span_data in enumerate(data_spans[:8], 1):  # Mostrar hasta 8
-                    print(f"      {i}. Texto: '{span_data['text']}' | Clase: '{span_data['class']}' | TestID: '{span_data['testid']}'")
-            else:
-                print("   ❌ No se encontraron spans con datos numéricos")
-        except Exception as e:
-            print(f"   ❌ Error en búsqueda amplia de spans: {e}")
-        
-        # Buscar todos los elementos que podrían contener datos de volumen
-        possible_elements = driver.find_elements(By.CSS_SELECTOR, 'div, span')
-        volume_candidates = []
-        
-        for elem in possible_elements[:50]:  # Revisar los primeros 50 elementos
-            try:
-                text = elem.text.strip()
-                class_name = elem.get_attribute("class") or ""
-                testid = elem.get_attribute("data-testid") or ""
-                
-                # Buscar elementos que puedan contener datos de volumen
-                if (text and any(char.isdigit() for char in text) and len(text) < 30 and
-                    ("kwo" in class_name.lower() or "volume" in class_name.lower() or 
-                     "volume" in testid.lower() or "kwo" in testid.lower())):
-                    volume_candidates.append({
-                        "text": text,
-                        "class": class_name,
-                        "testid": testid,
-                        "tag": elem.tag_name
-                    })
-            except:
-                continue
-        
-        if volume_candidates:
-            print(f"   🔍 Candidatos encontrados: {len(volume_candidates)}")
-            for i, candidate in enumerate(volume_candidates[:5], 1):
-                print(f"      {i}. Texto: '{candidate['text']}' | Clase: '{candidate['class']}' | TestID: '{candidate['testid']}' | Tag: '{candidate['tag']}'")
+        elem = driver.find_element(By.CSS_SELECTOR, 'span.kwo-widget-total[data-testid="volume-total"]')
+        vision_general_str = elem.text.strip()
+        if not vision_general_str or vision_general_str.lower() in ['n/d', 'n/a', '-', '--', '', 'sin datos', 'no data']:
+            print("⚠️ Visión General no disponible o N/D")
+            return 0, 0, 0
+        vision_general = parse_k_notation(vision_general_str)
+        print(f"✅ Visión General: {vision_general_str} -> {vision_general}")
+    except Exception:
+        print("⚠️ No se encontró Visión General, se asigna 0")
+        return 0, 0, 0
+
+    # 2. NAVEGAR A MAGIC TOOL
+    try:
+        magic_tool_button = driver.find_element(
+            By.CSS_SELECTOR, 'srf-sidebar-list-item[label="Keyword Magic Tool"]'
+        )
+        magic_tool_href = magic_tool_button.get_attribute("href")
+        if magic_tool_href:
+            driver.get(magic_tool_href)
+            print("➡️ Navegando a Keyword Magic Tool...")
         else:
-            print("   ❌ No se encontraron candidatos con datos numéricos")
-    except Exception as diag_e:
-        print(f"   ❌ Error en diagnóstico: {diag_e}")
-    
-    # Ahora intentar con los selectores específicos
-    for i, selector in enumerate(selectores_vision_general, 1):
-        try:
-            print(f"  Intentando selector {i}: {selector}")
-            
-            # Esperar un poco más antes de cada intento
-            if i > 1:
-                time.sleep(3)
-            
-            vision_general_element = driver.find_element(By.CSS_SELECTOR, selector)
-            vision_general_str = vision_general_element.text.strip()
-            
-            print(f"  ✅ Elemento encontrado!")
-            print(f"  Texto encontrado: '{vision_general_str}'")
-            print(f"  Clase del elemento: '{vision_general_element.get_attribute('class')}'")
-            print(f"  TestID del elemento: '{vision_general_element.get_attribute('data-testid') or 'Sin testid'}'")
-            
-            # Validar el contenido del texto
-            if not vision_general_str:
-                print(f"  ⚠️ Elemento encontrado pero sin texto")
+            print("⚠️ No se encontró href de Magic Tool")
+            return vision_general, 0, 0
+    except Exception as e:
+        print(f"❌ No se pudo encontrar/enlazar al 'Keyword Magic Tool': {e}")
+        return vision_general, 0, 0
+
+    time.sleep(6)  # Esperar carga Magic Tool
+
+    # 3. PALABRAS Y VOLUMEN TOTAL
+    palabras = 0
+    volumen = 0
+    try:
+        palabras_elem = driver.find_element(
+            By.CSS_SELECTOR, 'div.sm-keywords-table-header__item-value[data-testid="all-keywords"]'
+        )
+        palabras_str = palabras_elem.text.strip()
+        if palabras_str and any(char.isdigit() for char in palabras_str):
+            palabras = parse_k_notation(palabras_str)
+        print(f"✅ Palabras: {palabras_str} -> {palabras}")
+    except Exception:
+        print("⚠️ No se pudo extraer Palabras, se asigna 0")
+
+    try:
+        volumen_elem = driver.find_element(
+            By.CSS_SELECTOR, 'div.sm-keywords-table-header__item-value[data-testid="total-volume"]'
+        )
+        volumen_str = volumen_elem.text.strip()
+        if volumen_str and any(char.isdigit() for char in volumen_str):
+            volumen = parse_k_notation(volumen_str)
+        print(f"✅ Volumen: {volumen_str} -> {volumen}")
+    except Exception:
+        print("⚠️ No se pudo extraer Volumen, se asigna 0")
+
+    print(f"\n📊 RESUMEN DE DATOS EXTRAÍDOS:")
+    print(f"   🔢 Visión General: {vision_general}")
+    print(f"   📝 Palabras: {palabras}")
+    print(f"   📈 Volumen: {volumen}")
+
+    return vision_general, palabras, volumen
+
+
+def semrush_scraper():
+    load_dotenv()
+    EMAIL = os.getenv("SEMRUSH_USER")
+    PASSWORD = os.getenv("SEMRUSH_PASS")
+
+    # 1. OBTENER TODAS LAS RUTAS DE EXCEL CONFIGURADAS
+    try:
+        rutas_excel = obtener_rutas_excel()
+        print(f"📂 Se procesarán {len(rutas_excel)} archivo(s) Excel:")
+        for i, ruta in enumerate(rutas_excel, 1):
+            print(f"   {i}. {os.path.basename(ruta)}")
+    except ValueError as e:
+        print(e)
+        return
+
+    # CONFIGURACIÓN
+    user_data_dir = r"C:\Users\alexe\Documents\Udla-Trabajo\Scraping-Tendencias\profile"
+    profile_directory = "Default"
+
+    # LIMPIEZA DEL LOCK
+    full_profile_path = os.path.join(user_data_dir, profile_directory)
+    singleton_lock = os.path.join(full_profile_path, "SingletonLock")
+    if os.path.exists(singleton_lock):
+        print("🧯 Eliminando archivo de bloqueo previo (SingletonLock)...")
+        os.remove(singleton_lock)
+
+    # OPCIONES DE CHROME
+    options = uc.ChromeOptions()
+    options.add_argument("--start-maximized")
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+    options.add_argument(f"--profile-directory={profile_directory}")
+
+    # LANZAR EL DRIVER (UNA SOLA VEZ)
+    driver = uc.Chrome(options=options)
+
+    try:
+        # 2. INICIAR SESIÓN EN SEMRUSH (UNA SOLA VEZ)
+        driver.get("https://es.semrush.com/login/?src=header&redirect_to=%2F")
+        time.sleep(1.5)
+
+        if "login" not in driver.current_url:
+            print("✅ Sesión ya iniciada (no hace falta login).")
+        else:
+            print("🔐 Iniciando sesión en Semrush...")
+            try:
+                input_email = driver.find_element(By.ID, "email")
+                input_password = driver.find_element(By.ID, "password")
+
+                input_email.clear()
+                input_email.send_keys(EMAIL)
+                input_password.clear()
+                input_password.send_keys(PASSWORD)
+
+                input_password.send_keys(Keys.RETURN)
+                time.sleep(10)
+
+                if "login" in driver.current_url:
+                    print("⚠️ Parece que no se pudo iniciar sesión. Revisa tus credenciales.")
+                    return
+                else:
+                    print("✅ Sesión iniciada correctamente.")
+            except Exception as e:
+                print("❌ Error al intentar loguearse:", e)
+                return
+
+        # 3. PROCESAR CADA ARCHIVO EXCEL
+        for i, ruta_excel in enumerate(rutas_excel, 1):
+            print(f"\n{'='*60}")
+            print(f"📊 Procesando archivo {i}/{len(rutas_excel)}: {os.path.basename(ruta_excel)}")
+            print(f"{'='*60}")
+
+            # Extraer carrera para este archivo específico
+            carrera = extraer_datos_tabla("carreraSemrush", ruta_excel)
+            if not carrera:
+                print(f"❌ No se encontró la carrera en la tabla 'carreraSemrush' del archivo {ruta_excel}")
                 continue
-            
-            # Si encuentra "n/d" o similar, significa que no hay datos
-            if vision_general_str.lower() in ['n/d', 'n/a', '-', '--', '', 'sin datos', 'no data']:
-                vision_general = 0
-                print(f"  ✅ Visión General: Sin datos disponibles ('{vision_general_str}') = 0")
-                break
-            
-            # Si contiene números, procesarlo
-            elif any(char.isdigit() for char in vision_general_str):
-                vision_general = parse_k_notation(vision_general_str)
-                print(f"  ✅ Visión General con datos: '{vision_general_str}' = {vision_general}")
+            print(f"🔍 Carrera a buscar: {carrera}")
+
+            # Procesar esta carrera específica
+            try:
+                # 4. IR A LA PÁGINA DE KEYWORD OVERVIEW
+                driver.get("https://es.semrush.com/analytics/keywordoverview/?db=ec")
+                time.sleep(2)
+
+                # 5. BUSCAR LA CARRERA
+                if not buscar_carrera_semrush(driver, carrera):
+                    print(f"❌ No se pudo buscar la carrera '{carrera}' para {os.path.basename(ruta_excel)}")
+                    continue
+
+                # 6. EXTRAER DATOS
+                vision_general, palabras, volumen = extraer_datos_semrush(driver, carrera)
                 
-                # Validación adicional: si el resultado es 0 pero había números, investigar
-                if vision_general == 0:
-                    print(f"  ⚠️ ADVERTENCIA: Texto tenía números pero parse_k_notation devolvió 0")
-                    print(f"  🔍 Texto original: '{vision_general_str}'")
-                    print(f"  🔍 Texto después de strip/upper: '{vision_general_str.strip().upper()}'")
-                break
-            else:
-                print(f"  ⚠️ Elemento encontrado pero texto no reconocido como datos: '{vision_general_str}'")
+                # 7. GUARDAR DATOS EN EL ARCHIVO EXCEL CORRESPONDIENTE
+                datos_para_guardar = [
+                    {
+                        "vision_general": f"{vision_general}",
+                        "palabras": f"{palabras}",
+                        "volumen": f"{volumen}",
+                    }
+                ]
+
+                try:
+                    guardar_datos_excel(datos_para_guardar, plataforma="semrush", ruta_excel=ruta_excel)
+                    print(f"✅ Datos guardados correctamente para {os.path.basename(ruta_excel)}")
+                except Exception as e:
+                    print(f"⚠️ Error guardando datos en Excel para {ruta_excel}: {e}")
+
+            except Exception as e:
+                print(f"❌ Error procesando {os.path.basename(ruta_excel)}: {e}")
                 continue
-                
-        except Exception as e:
-            print(f"  ❌ Selector {i} falló: {str(e)[:80]}...")
-            continue
+
+    except Exception as main_e:
+        print(f"❌ Error general en el scraper: {main_e}")
     
     if vision_general == 0:
         print("⚠️ RESULTADO FINAL: No se extrajo Visión General o no hay datos disponibles.")
@@ -485,7 +461,7 @@ def semrush_scraper():
         return
 
     # CONFIGURACIÓN
-    user_data_dir = r"C:\Users\User\Documents\TRABAJO - UDLA\Scraping-Tendencias\profile"
+    user_data_dir = r"C:\Users\alexe\Documents\Udla-Trabajo\Scraping-Tendencias\profile"
     profile_directory = "Default"
 
     # LIMPIEZA DEL LOCK
