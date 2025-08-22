@@ -868,7 +868,7 @@ def linkedin_scraper():
     UBICACIONES = ["Ecuador", "América Latina"]
 
     # CONFIGURACIÓN DEL NAVEGADOR
-    user_data_dir = r"C:\Users\alexe\Documents\Udla-Trabajo\Scraping-Tendencias\profile"
+    user_data_dir = r"C:\Users\User\Documents\TRABAJO - UDLA\Scraping-Tendencias\profile"
     profile_directory = "Default"
 
     # LIMPIEZA DEL LOCK

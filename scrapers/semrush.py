@@ -139,19 +139,22 @@ def extraer_datos_semrush(driver, carrera):
     time.sleep(6)  # Esperar carga inicial
 
     # 1. VISIÓN GENERAL
+    vision_general = 0
     try:
         elem = driver.find_element(By.CSS_SELECTOR, 'span.kwo-widget-total[data-testid="volume-total"]')
         vision_general_str = elem.text.strip()
         if not vision_general_str or vision_general_str.lower() in ['n/d', 'n/a', '-', '--', '', 'sin datos', 'no data']:
-            print("⚠️ Visión General no disponible o N/D")
-            return 0, 0, 0
-        vision_general = parse_k_notation(vision_general_str)
-        print(f"✅ Visión General: {vision_general_str} -> {vision_general}")
-    except Exception:
-        print("⚠️ No se encontró Visión General, se asigna 0")
-        return 0, 0, 0
+            print("⚠️ Visión General no disponible o N/D, pero continuando con Magic Tool...")
+            vision_general = 0
+        else:
+            vision_general = parse_k_notation(vision_general_str)
+            print(f"✅ Visión General: {vision_general_str} -> {vision_general}")
+    except Exception as e:
+        print(f"⚠️ No se encontró Visión General ({str(e)[:50]}...), pero continuando con Magic Tool...")
+        vision_general = 0
 
-    # 2. NAVEGAR A MAGIC TOOL
+    # 2. NAVEGAR A MAGIC TOOL (SIEMPRE, independientemente de Visión General)
+    print("🔗 Navegando a Magic Tool para verificar otros datos...")
     try:
         magic_tool_button = driver.find_element(
             By.CSS_SELECTOR, 'srf-sidebar-list-item[label="Keyword Magic Tool"]'
@@ -162,16 +165,18 @@ def extraer_datos_semrush(driver, carrera):
             print("➡️ Navegando a Keyword Magic Tool...")
         else:
             print("⚠️ No se encontró href de Magic Tool")
-            return vision_general, 0, 0
+            # No devolver aquí, intentar con la URL actual
     except Exception as e:
         print(f"❌ No se pudo encontrar/enlazar al 'Keyword Magic Tool': {e}")
-        return vision_general, 0, 0
+        print("🔄 Intentando continuar en la página actual...")
 
     time.sleep(6)  # Esperar carga Magic Tool
 
     # 3. PALABRAS Y VOLUMEN TOTAL
     palabras = 0
     volumen = 0
+    
+    # Intentar extraer Palabras
     try:
         palabras_elem = driver.find_element(
             By.CSS_SELECTOR, 'div.sm-keywords-table-header__item-value[data-testid="all-keywords"]'
@@ -179,10 +184,13 @@ def extraer_datos_semrush(driver, carrera):
         palabras_str = palabras_elem.text.strip()
         if palabras_str and any(char.isdigit() for char in palabras_str):
             palabras = parse_k_notation(palabras_str)
-        print(f"✅ Palabras: {palabras_str} -> {palabras}")
-    except Exception:
-        print("⚠️ No se pudo extraer Palabras, se asigna 0")
+            print(f"✅ Palabras: {palabras_str} -> {palabras}")
+        else:
+            print(f"⚠️ Palabras encontradas pero valor no válido: '{palabras_str}'")
+    except Exception as e:
+        print(f"⚠️ No se pudo extraer Palabras: {str(e)[:50]}...")
 
+    # Intentar extraer Volumen
     try:
         volumen_elem = driver.find_element(
             By.CSS_SELECTOR, 'div.sm-keywords-table-header__item-value[data-testid="total-volume"]'
@@ -190,9 +198,50 @@ def extraer_datos_semrush(driver, carrera):
         volumen_str = volumen_elem.text.strip()
         if volumen_str and any(char.isdigit() for char in volumen_str):
             volumen = parse_k_notation(volumen_str)
-        print(f"✅ Volumen: {volumen_str} -> {volumen}")
-    except Exception:
-        print("⚠️ No se pudo extraer Volumen, se asigna 0")
+            print(f"✅ Volumen: {volumen_str} -> {volumen}")
+        else:
+            print(f"⚠️ Volumen encontrado pero valor no válido: '{volumen_str}'")
+    except Exception as e:
+        print(f"⚠️ No se pudo extraer Volumen: {str(e)[:50]}...")
+
+    # 4. VERIFICACIÓN FINAL Y LOGGING DETALLADO
+    datos_encontrados = []
+    if vision_general > 0:
+        datos_encontrados.append(f"Visión General: {vision_general}")
+    if palabras > 0:
+        datos_encontrados.append(f"Palabras: {palabras}")
+    if volumen > 0:
+        datos_encontrados.append(f"Volumen: {volumen}")
+
+    if datos_encontrados:
+        print(f"✅ DATOS EXTRAÍDOS EXITOSAMENTE: {', '.join(datos_encontrados)}")
+    else:
+        print("⚠️ ADVERTENCIA: No se encontraron datos válidos en ninguna métrica")
+        print("🔍 Intentando búsqueda de emergencia en la página actual...")
+        
+        # BÚSQUEDA DE EMERGENCIA - buscar cualquier número relevante en la página
+        try:
+            # Buscar elementos que podrían contener datos numéricos
+            all_numeric_elements = driver.find_elements(By.XPATH, "//*[contains(text(), 'K') or contains(text(), '.') or contains(text(), ',')]")
+            emergency_candidates = []
+            
+            for elem in all_numeric_elements[:15]:  # Limitar la búsqueda
+                try:
+                    text = elem.text.strip()
+                    if (text and any(char.isdigit() for char in text) and 
+                        len(text) < 20 and ('K' in text.upper() or '.' in text or ',' in text)):
+                        emergency_candidates.append(text)
+                except:
+                    continue
+            
+            if emergency_candidates:
+                print(f"🚨 Posibles datos encontrados en búsqueda de emergencia: {emergency_candidates[:5]}")
+                print("💡 Sugerencia: Verificar manualmente si estos valores son relevantes")
+            else:
+                print("🚨 Búsqueda de emergencia no encontró candidatos numéricos")
+                
+        except Exception as emergency_e:
+            print(f"🚨 Error en búsqueda de emergencia: {emergency_e}")
 
     print(f"\n📊 RESUMEN DE DATOS EXTRAÍDOS:")
     print(f"   🔢 Visión General: {vision_general}")
@@ -218,7 +267,7 @@ def semrush_scraper():
         return
 
     # CONFIGURACIÓN
-    user_data_dir = r"C:\Users\alexe\Documents\Udla-Trabajo\Scraping-Tendencias\profile"
+    user_data_dir = r"C:\Users\User\Documents\TRABAJO - UDLA\Scraping-Tendencias\profile"
     profile_directory = "Default"
 
     # LIMPIEZA DEL LOCK
@@ -316,67 +365,22 @@ def semrush_scraper():
     except Exception as main_e:
         print(f"❌ Error general en el scraper: {main_e}")
     
-    if vision_general == 0:
-        print("⚠️ RESULTADO FINAL: No se extrajo Visión General o no hay datos disponibles.")
-        print("🔍 Intentando extracción manual de emergencia...")
-        
-        # Búsqueda de emergencia - buscar cualquier número en la página
+    finally:
         try:
-            all_text_elements = driver.find_elements(By.XPATH, "//*[contains(text(), 'K') or contains(text(), '0') or contains(text(), '1') or contains(text(), '2') or contains(text(), '3') or contains(text(), '4') or contains(text(), '5') or contains(text(), '6') or contains(text(), '7') or contains(text(), '8') or contains(text(), '9')]")
-            emergency_candidates = []
-            
-            for elem in all_text_elements[:20]:
-                try:
-                    text = elem.text.strip()
-                    if (text and any(char.isdigit() for char in text) and 
-                        len(text) < 20 and 'K' in text.upper()):
-                        emergency_candidates.append(text)
-                except:
-                    continue
-            
-            if emergency_candidates:
-                print(f"🚨 Candidatos de emergencia encontrados: {emergency_candidates[:5]}")
-            else:
-                print("🚨 No se encontraron candidatos de emergencia")
-                
-        except Exception as emergency_e:
-            print(f"🚨 Error en búsqueda de emergencia: {emergency_e}")
+            driver.quit()
+            print(f"\n🎉 Proceso SEMrush finalizado. Se procesaron {len(rutas_excel)} archivo(s).")
+        except:
+            pass
+        'div.sm-keywords-table-header__item-value[data-testid="all-keywords"]',
+        'div[data-testid="all-keywords"]',
+        '[data-testid="all-keywords"]'
     
-    print(f"🔢 Visión General final para '{carrera}': {vision_general}")
-
-    # 2. NAVEGACIÓN A KEYWORD MAGIC TOOL
-    print("\n🔗 Navegando a Keyword Magic Tool...")
-    try:
-        # Esperamos a que aparezca el botón con label exacto
-        magic_tool_button = driver.find_element(
-            By.CSS_SELECTOR, 'srf-sidebar-list-item[label="Keyword Magic Tool"]'
-        )
-        # Obtenemos el link del atributo href
-        magic_tool_href = magic_tool_button.get_attribute("href")
-
-        if magic_tool_href:
-            driver.get(magic_tool_href)
-            print("➡️ Navegando a Keyword Magic Tool vía href...")
-        else:
-            raise Exception("No se encontró el atributo href.")
-    except Exception as e:
-        print(f"❌ No se pudo encontrar/enlazar al 'Keyword Magic Tool': {e}")
-        print("⚠️ Continuando con datos parciales...")
-        return vision_general, 0, 0
-
-    # Esperar a que cargue Keyword Magic Tool
-    print("⏳ Esperando a que cargue Keyword Magic Tool...")
-    time.sleep(8)
-
-    # 3. EXTRAER "all-keywords" (PALABRAS) del Magic Tool
-    palabras = 0
+    print("🔍 Buscando elemento de Palabras (all-keywords)...")
     selectores_palabras = [
         'div.sm-keywords-table-header__item-value[data-testid="all-keywords"]',
         'div[data-testid="all-keywords"]',
         '[data-testid="all-keywords"]'
     ]
-    
-    print("🔍 Buscando elemento de Palabras (all-keywords)...")
     for i, selector in enumerate(selectores_palabras, 1):
         try:
             print(f"  Intentando selector {i}: {selector}")
@@ -461,7 +465,7 @@ def semrush_scraper():
         return
 
     # CONFIGURACIÓN
-    user_data_dir = r"C:\Users\alexe\Documents\Udla-Trabajo\Scraping-Tendencias\profile"
+    user_data_dir = r"C:\Users\User\Documents\TRABAJO - UDLA\Scraping-Tendencias\profile"
     profile_directory = "Default"
 
     # LIMPIEZA DEL LOCK

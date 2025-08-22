@@ -3,8 +3,8 @@ from scrapers.semrush import semrush_scraper
 
 print("EJECUCION SCRAPERS")
 
-# print("---Linkedin---")
-# linkedin_scraper()
+print("---Linkedin---")
+linkedin_scraper()
 
-print("---Semrush---")
-semrush_scraper()
+# print("---Semrush---")
+# semrush_scraper()
