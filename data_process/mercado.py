@@ -53,8 +53,8 @@ def calc_mercado(ruta_excel=None):
             resultados_carreraReferencia[hoja] = 0
             continue
 
-        if "ACTIVIDAD ECONÓMICA" not in df.columns or "2024" not in df.columns:
-            print(f"ERROR: Columnas esperadas ('ACTIVIDAD ECONÓMICA' o '2024') no encontradas en la hoja '{hoja}'.")
+        if "ACTIVIDAD ECONÓMICA" not in df.columns or "2023" not in df.columns:
+            print(f"ERROR: Columnas esperadas ('ACTIVIDAD ECONÓMICA' o '2023') no encontradas en la hoja '{hoja}'.")
             resultados_carreraReferencia[hoja] = 0
             continue
         
@@ -66,9 +66,9 @@ def calc_mercado(ruta_excel=None):
         print(f"Filas que coinciden con los códigos: {len(df_filtrado)}")
         if len(df_filtrado) > 0:
             print(f"Códigos encontrados: {df_filtrado['ACTIVIDAD ECONÓMICA'].tolist()}")
-            print(f"Valores 2024 encontrados: {df_filtrado['2024'].tolist()}")
+            print(f"Valores 2023 encontrados: {df_filtrado['2023'].tolist()}")
         
-        total = df_filtrado["2024"].sum()
+        total = df_filtrado["2023"].sum()
         print(f"Total para {hoja}: {total}")
         resultados_carreraReferencia[hoja] = total
 
